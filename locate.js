@@ -36,12 +36,55 @@ function nodeLocate(loader){
 		return resolve(name, { basedir: base }).then(null, baseLocate);
 	};
 
+	var fetch = loader.fetch;
+	loader.fetch = function(load){
+		if(isBuiltInModule(load.address)){
+			load.metadata.builtIn = true;
+			return "";
+		}
+
+		return fetch.apply(this, arguments);
+	};
+
+	var instantiate = loader.instantiate;
+	loader.instantiate = function(load){
+		var loader = this;
+
+		if(load.metadata.builtIn) {
+			load.metadata.format = "node-builtin";
+
+			load.metadata.execute = function(){
+				return require(load.name);
+			};
+		}
+
+		return instantiate.apply(this, arguments);
+	};
+
 	function parentBase(name){
 		var addresses = this._parentAddresses[name];
 		return (addresses && addresses.length && addresses[0]) ||
 			absolutePath(this.baseURL);
 	}
 
+}
+
+function isBuiltInModule(pth){
+	return !isFileProtocol(pth) &&
+		!startsWithSlash(pth) &&
+		!startsWithDotSlash(pth);
+}
+
+function startsWithDotSlash(pth){
+	return pth.substr(0,2) === "./";
+}
+
+function startsWithSlash(pth){
+	return pth[0] === "/";
+}
+
+function isFileProtocol(pth){
+	return pth.substr(0, 5) === "file:";
 }
 
 function denpm(name){
