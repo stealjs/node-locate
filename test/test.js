@@ -39,6 +39,8 @@ describe("node-locate", function(){
 				assert.equal(val.name, "basics", "Got the basics module");
 				assert.equal(val.one.name, "one", "Got the dependency");
 				assert.equal(val.one.two.name, "two", "Got the dependency's dependency");
+				var fs = val.one.two.fs;
+				assert.equal(typeof fs.readFile, "function", "got the fs module");
 			}).then(done, done);
 		});
 	});
