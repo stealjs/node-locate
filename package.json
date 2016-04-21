@@ -1,6 +1,6 @@
 {
   "name": "@stealjs/node-locate",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A locate hook for Node",
   "main": "locate.js",
   "scripts": {
@@ -22,11 +22,10 @@
   "homepage": "https://github.com/stealjs/node-locate",
   "devDependencies": {
     "mocha": "^2.2.4",
-    "steal": "git://github.com/stealjs/steal#steal-import"
+    "steal": "^0.16.0"
   },
   "dependencies": {
     "pdenodeify": "^0.1.0",
-    "resolve": "^1.1.6",
-    "system-npm": "^0.2.1"
+    "resolve": "^1.1.6"
   }
 }

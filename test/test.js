@@ -33,8 +33,9 @@ describe("node-locate", function(){
 			nodeLocate(this.steal.System);
 		});
 
-		it.only("basics work", function(done){
-			this.steal.import(this.steal.System.main).then(function(val){
+		it("basics work", function(done){
+			this.steal.startup().then(function(vals){
+				var val = vals[0];
 				assert.equal(val.name, "basics", "Got the basics module");
 				assert.equal(val.one.name, "one", "Got the dependency");
 				assert.equal(val.one.two.name, "two", "Got the dependency's dependency");

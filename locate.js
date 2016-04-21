@@ -1,10 +1,10 @@
 var asap = require("pdenodeify");
 var resolve = asap(require("resolve"));
 var path = require("path");
-var npmUtils = require("system-npm/npm-utils");
+var isNpm = require("steal/ext/npm-utils").moduleName.isNpm;
 
 module.exports = nodeLocate;
-	
+
 function nodeLocate(loader){
 	addExtension(loader);
 
@@ -26,14 +26,14 @@ function nodeLocate(loader){
 			return name;
 		});
 	};
-	
+
 	var locate = loader.locate;
 	loader.locate = function(load){
-		console.log("NPM?", load.name, npmUtils.moduleName.isNpm(load.name))
+		var name = denpm(load.name);
 
 		var baseLocate = locate.bind(this, load);
 		var base = parentBase.call(this, load.name);
-		return resolve(load.name, { basedir: base }).then(null, baseLocate);
+		return resolve(name, { basedir: base }).then(null, baseLocate);
 	};
 
 	function parentBase(name){
@@ -42,6 +42,16 @@ function nodeLocate(loader){
 			absolutePath(this.baseURL);
 	}
 
+}
+
+function denpm(name){
+	if(!isNpm(name)) return name;
+	var atIndex = name.indexOf("@");
+	var hashIndex = name.indexOf("#");
+	var modulePackage = name.substr(0, atIndex);
+	var modulePath = name.substr(hashIndex+1);
+	var newName = modulePackage + "/" + modulePath;
+	return newName;
 }
 
 function absolutePath(address){
