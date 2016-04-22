@@ -3,6 +3,12 @@
 	"version": "0.0.1",
 	"main": "main.js",
 	"dependencies": {
-		"one": "1.0.0"
+		"one": "1.0.0",
+		"three": "1.0.0"
+	},
+	"system": {
+		"paths": {
+			"three": "three.js"
+		}
 	}
 }
