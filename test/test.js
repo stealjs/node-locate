@@ -25,23 +25,35 @@ describe("node-locate", function(){
 	});
 
 	describe("with npm", function(){
-		beforeEach(function(){
+		beforeEach(function(done){
 			this.steal = steal.clone();
 			this.steal.System.config({
 				config: __dirname + "/basics/package.json!npm"
 			});
 			nodeLocate(this.steal.System);
+
+			this.steal.startup().then(function(results){
+				this.mod = results[0];
+				done();
+			}.bind(this));
 		});
 
-		it("basics work", function(done){
-			this.steal.startup().then(function(vals){
-				var val = vals[0];
-				assert.equal(val.name, "basics", "Got the basics module");
-				assert.equal(val.one.name, "one", "Got the dependency");
-				assert.equal(val.one.two.name, "two", "Got the dependency's dependency");
-				var fs = val.one.two.fs;
-				assert.equal(typeof fs.readFile, "function", "got the fs module");
-			}).then(done, done);
+		it("basics work", function(){
+			var mod = this.mod;
+			assert.equal(mod.name, "basics", "Got the basics module");
+			assert.equal(mod.one.name, "one", "Got the dependency");
+			assert.equal(mod.one.two.name, "two",
+						 "Got the dependency's dependency");
+		});
+
+		it("can load a node builtin", function(){
+			var fs = this.mod.one.two.fs;
+			assert.equal(typeof fs.readFile, "function", "got the fs module");
+		});
+
+		it("doesn't override paths config", function(){
+			var three = this.mod.three;
+			assert.equal(three, "fake", "got the one set by paths");
 		});
 	});
 

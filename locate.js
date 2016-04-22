@@ -1,7 +1,9 @@
 var asap = require("pdenodeify");
 var resolve = asap(require("resolve"));
 var path = require("path");
-var isNpm = require("steal/ext/npm-utils").moduleName.isNpm;
+var npmUtils = require("steal/ext/npm-utils");
+var isNpm = npmUtils.moduleName.isNpm;
+var joinURIs = npmUtils.path.joinURIs;
 
 module.exports = nodeLocate;
 
@@ -31,9 +33,19 @@ function nodeLocate(loader){
 	loader.locate = function(load){
 		var name = denpm(load.name);
 
-		var baseLocate = locate.bind(this, load);
-		var base = parentBase.call(this, load.name);
-		return resolve(name, { basedir: base }).then(null, baseLocate);
+		var loader = this;
+		return Promise.resolve(locate.apply(loader, arguments))
+			.then(function(proposedAddress){
+				// If anything abnormal happened there might be a paths config
+				if(!isExpectedLocateResult.call(loader, load, proposedAddress)) {
+					return proposedAddress;
+				}
+
+				var base = parentBase.call(loader, load.name);
+				return resolve(name, { basedir: base }).then(null, function(){
+					return proposedAddress;
+				});
+			});
 	};
 
 	var fetch = loader.fetch;
@@ -99,6 +111,18 @@ function denpm(name){
 
 function absolutePath(address){
 	return (address || "").replace("file:", "");
+}
+
+function isExpectedLocateResult(load, address){
+	var expectedAddress = joinURIs(this.baseURL, load.name);
+
+	// If locate didn't do the expected thing then we're going
+	// to guess that there was some paths config or something and bail out.
+	if(address !== expectedAddress + ".js" &&
+	  address !== expectedAddress) {
+		return false;
+	}
+	return true;
 }
 
 function addExtension(loader){
