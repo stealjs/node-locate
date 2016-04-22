@@ -63,7 +63,7 @@ function nodeLocate(loader){
 		var loader = this;
 
 		if(load.metadata.builtIn) {
-			load.metadata.format = "node-builtin";
+			load.metadata.format = "defined";
 
 			load.metadata.execute = function(){
 				return require(load.name);
